@@ -1,7 +1,3 @@
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
 import { Button } from "@mui/material";
 import { ChangeEvent, ReactNode, useRef } from "react";
 
@@ -33,7 +29,7 @@ export default function UploadButton({ onUpload, children }: UploadButtonProps) 
         style={{ display: 'none' }}
 
       />
-      <Button variant="contained" onClick={handleUploadClick}>{children}</Button>
+      <Button onClick={handleUploadClick}>{children}</Button>
     </>
   )
 }
