@@ -9,10 +9,16 @@ import UploadButton from "./UploadButton";
 import { Button } from '@mui/material';
 import { downloadStr, formatLocalYMD } from './util';
 
+interface TradeRecord {
+  date: Date;
+  orderType: 'Buy' | 'Sell';
+  sym: string,
+  unitPrice: number,
+  quantity: number,
+}
 
-const initialRows: GridRowsProp = [
+const initialTrades: TradeRecord[] = [
   {
-    id: 1,
     date: new Date(2017, 3, 2),
     orderType: 'Buy',
     sym: 'VAS',
@@ -20,7 +26,6 @@ const initialRows: GridRowsProp = [
     quantity: 2
   },
   {
-    id: 2,
     date: new Date(2019, 5, 3),
     orderType: 'Sell',
     sym: 'VAS',
@@ -30,7 +35,7 @@ const initialRows: GridRowsProp = [
 ]
 
 export default function TradeHistory() {
-  const [rows, setRows] = useState(initialRows);
+  const [trades, setTrades] = useState(initialTrades);
 
   const columns: GridColDef[] = [
     { field: 'date', headerName: 'Date', type: 'date' },
@@ -38,12 +43,19 @@ export default function TradeHistory() {
     { field: 'sym', headerName: 'Symbol' },
     { field: 'unitPrice', headerName: 'Unit Price', type: 'number' },
     { field: 'quantity', headerName: 'Quantity', type: 'number' },
+    { field: 'total', headerName: 'Total', type: 'number' },
   ]
+
+  const rows: GridRowsProp = trades.map((x, i) => ({
+    ...x,
+    id: i,
+    total: x.unitPrice * x.quantity * (x.orderType === 'Buy' ? -1 : 1)
+  }));
 
   const handleImport = async (file: File) => {
     try {
       const text = await file.text();
-      const records: [Object] = parse(text, {
+      const newTrades: TradeRecord[] = parse(text, {
         columns: true,
         cast: (value, context) => {
           if (!context.header && context.column === 'date') {
@@ -52,8 +64,7 @@ export default function TradeHistory() {
           return value;
         },
       });
-      const newRows = records.map((x, i) => ({...x, id: i}));
-      setRows(newRows);
+      setTrades(newTrades);
     }
     catch {
       console.log('Import error');  
@@ -61,8 +72,7 @@ export default function TradeHistory() {
   };
 
   const handleExport = () => {
-    const withoutIds = rows.map(({id, ...rest}) => rest);
-    const text = stringify([...withoutIds], {
+    const text = stringify(trades, {
       header: true,
       cast: { date: (value) => formatLocalYMD(value) }
     });
