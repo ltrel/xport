@@ -2,7 +2,7 @@ import { parse, stringify } from "csv/browser/esm/sync";
 import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
 import { useState } from "react";
 import UploadButton from "./UploadButton";
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { downloadStr, formatLocalYMD } from './util';
 
 interface TradeRecord {
@@ -37,13 +37,13 @@ export default function TradeHistory() {
   const [trades, setTrades] = useState(initialTrades);
 
   const columns: GridColDef[] = [
-    { field: 'date', headerName: 'Date', type: 'date' },
-    { field: 'orderType', headerName: 'Order Type' },
-    { field: 'sym', headerName: 'Symbol' },
-    { field: 'unitPrice', headerName: 'Unit Price', type: 'number' },
-    { field: 'quantity', headerName: 'Quantity', type: 'number' },
-    { field: 'fees', headerName: 'Fees', type: 'number' },
-    { field: 'total', headerName: 'Total', type: 'number' },
+    { flex: 1, field: 'date', headerName: 'Date', type: 'date' },
+    { flex: 1, field: 'orderType', headerName: 'Order Type' },
+    { flex: 1, field: 'sym', headerName: 'Symbol' },
+    { flex: 1, field: 'unitPrice', headerName: 'Unit Price', type: 'number' },
+    { flex: 1, field: 'quantity', headerName: 'Quantity', type: 'number' },
+    { flex: 1, field: 'fees', headerName: 'Fees', type: 'number' },
+    { flex: 1, field: 'total', headerName: 'Total', type: 'number' },
   ]
 
   const rows: GridRowsProp = trades.map((x, i) => ({
@@ -80,10 +80,10 @@ export default function TradeHistory() {
   };
 
   return (
-    <>
+    <Box>
       <UploadButton onUpload={handleImport}>Import CSV</UploadButton>
       <Button onClick={handleExport}>Export CSV</Button>
       <DataGrid columns={columns} rows={rows} />
-    </>
+    </Box>
   )
 }
