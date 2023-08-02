@@ -15,6 +15,7 @@ interface TradeRecord {
   sym: string,
   unitPrice: number,
   quantity: number,
+  fees: number,
 }
 
 const initialTrades: TradeRecord[] = [
@@ -23,14 +24,16 @@ const initialTrades: TradeRecord[] = [
     orderType: 'Buy',
     sym: 'VAS',
     unitPrice: 97.31,
-    quantity: 2
+    quantity: 2,
+    fees: 2
   },
   {
     date: new Date(2019, 5, 3),
     orderType: 'Sell',
     sym: 'VAS',
     unitPrice: 91.29,
-    quantity: 1
+    quantity: 1,
+    fees: 0
   },
 ]
 
@@ -43,13 +46,14 @@ export default function TradeHistory() {
     { field: 'sym', headerName: 'Symbol' },
     { field: 'unitPrice', headerName: 'Unit Price', type: 'number' },
     { field: 'quantity', headerName: 'Quantity', type: 'number' },
+    { field: 'fees', headerName: 'Fees', type: 'number' },
     { field: 'total', headerName: 'Total', type: 'number' },
   ]
 
   const rows: GridRowsProp = trades.map((x, i) => ({
     ...x,
     id: i,
-    total: x.unitPrice * x.quantity * (x.orderType === 'Buy' ? -1 : 1)
+    total: x.unitPrice * x.quantity * (x.orderType === 'Buy' ? -1 : 1) - x.fees
   }));
 
   const handleImport = async (file: File) => {
