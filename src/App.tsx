@@ -1,10 +1,8 @@
-import TradeHistory from "./TradeHistory"
+import Dashboard from "./Dashboard"
 
 function App() {
   return (
-    <div style={{ height: 600, width: 800 }}>
-      <TradeHistory />
-    </div>
+    <Dashboard />
   )
 }
 
