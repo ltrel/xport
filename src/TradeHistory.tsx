@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { parse, stringify } from "csv/browser/esm/sync";
 import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
 import { useState } from "react";
@@ -13,6 +14,15 @@ interface TradeRecord {
   quantity: number,
   fees: number,
 }
+const TradeRecordSchema = z.object({
+  date: z.date(),
+  orderType: z.enum(['Buy', 'Sell']),
+  sym: z.string(),
+  unitPrice: z.number(),
+  quantity: z.number(),
+  fees: z.number(),
+})
+const TradeArraySchema = z.array(TradeRecordSchema);
 
 const initialTrades: TradeRecord[] = [
   {
@@ -55,19 +65,26 @@ export default function TradeHistory() {
   const handleImport = async (file: File) => {
     try {
       const text = await file.text();
-      const newTrades: TradeRecord[] = parse(text, {
+      const newTrades: any = parse(text, {
         columns: true,
         cast: (value, context) => {
-          if (!context.header && context.column === 'date') {
+          if (context.header) {
+            return value;
+          }
+          else if (context.column === 'date') {
             return new Date(value);
+          }
+          else if (context.index > 2) {
+            return Number(value);
           }
           return value;
         },
       });
+      TradeArraySchema.parse(newTrades);
       setTrades(newTrades);
     }
-    catch {
-      console.log('Import error');  
+    catch(e) {
+      alert('Error: file could not be imported')
     }
   };
 
