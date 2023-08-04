@@ -65,7 +65,7 @@ export default function TradeHistory() {
   const handleImport = async (file: File) => {
     try {
       const text = await file.text();
-      const newTrades: any = parse(text, {
+      const newTrades: unknown = parse(text, {
         columns: true,
         cast: (value, context) => {
           if (context.header) {
@@ -80,8 +80,7 @@ export default function TradeHistory() {
           return value;
         },
       });
-      TradeArraySchema.parse(newTrades);
-      setTrades(newTrades);
+      setTrades(TradeArraySchema.parse(newTrades));
     }
     catch(e) {
       alert('Error: file could not be imported')
