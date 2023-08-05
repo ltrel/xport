@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { parse, stringify } from "csv/browser/esm/sync";
-import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridEventListener, GridRowEditStartParams, GridRowEditStopParams, GridRowEditStopReasons, GridRowModel, GridRowsProp, MuiEvent, useGridApiRef } from "@mui/x-data-grid";
 import { useState } from "react";
 import UploadButton from "./UploadButton";
-import { Box, Button } from '@mui/material';
+import { Box, Button, Container, Stack } from '@mui/material';
 import { downloadStr, formatLocalYMD } from './util';
 
 interface TradeRecord {
@@ -44,23 +44,38 @@ const initialTrades: TradeRecord[] = [
 ]
 
 export default function TradeHistory() {
+  const apiRef = useGridApiRef();
   const [trades, setTrades] = useState(initialTrades);
+  const [showNewRow, setShowNewRow] = useState(false);
 
   const columns: GridColDef[] = [
-    { flex: 1, field: 'date', headerName: 'Date', type: 'date' },
-    { flex: 1, field: 'orderType', headerName: 'Order Type' },
-    { flex: 1, field: 'sym', headerName: 'Symbol' },
-    { flex: 1, field: 'unitPrice', headerName: 'Unit Price', type: 'number' },
-    { flex: 1, field: 'quantity', headerName: 'Quantity', type: 'number' },
-    { flex: 1, field: 'fees', headerName: 'Fees', type: 'number' },
+    { flex: 1, field: 'date', headerName: 'Date', type: 'date', editable: true },
+    { flex: 1, field: 'orderType', headerName: 'Order Type', editable: true },
+    { flex: 1, field: 'sym', headerName: 'Symbol', editable: true },
+    { flex: 1, field: 'unitPrice', headerName: 'Unit Price', type: 'number', editable: true },
+    { flex: 1, field: 'quantity', headerName: 'Quantity', type: 'number', editable: true },
+    { flex: 1, field: 'fees', headerName: 'Fees', type: 'number', editable: true },
     { flex: 1, field: 'total', headerName: 'Total', type: 'number' },
   ]
 
-  const rows: GridRowsProp = trades.map((x, i) => ({
+  let rows: GridRowsProp = trades.map((x, i) => ({
     ...x,
     id: i,
     total: x.unitPrice * x.quantity * (x.orderType === 'Buy' ? -1 : 1) - x.fees
   }));
+  if (showNewRow) {
+    const newId = rows.length;
+    rows = [...rows, {id: newId}];
+  }
+
+  const enterEditMode = () => {
+    setShowNewRow(true);
+    apiRef.current.startRowEditMode({id: trades.length});
+  };
+
+  const exitEditMode = () => {
+    setShowNewRow(false);
+  }
 
   const handleImport = async (file: File) => {
     try {
@@ -95,11 +110,65 @@ export default function TradeHistory() {
     downloadStr(text, 'xport.csv');
   };
 
+  const preventRowEditStart: GridEventListener<'rowEditStart'> = (_params: GridRowEditStartParams, event: MuiEvent) => {
+    event.defaultMuiPrevented = true;
+    return;
+  };
+
+  const handleRowEditStop: GridEventListener<'rowEditStop'> = (params: GridRowEditStopParams, _event: MuiEvent) => {
+    if (params.reason === GridRowEditStopReasons.escapeKeyDown) {
+      exitEditMode();
+      return;
+    }
+  };
+
+  const processRowUpdate = (newRow: GridRowModel, _oldRow: GridRowModel) => {
+    const {id, ...newTrade} = newRow;
+    setTrades([...trades, TradeRecordSchema.parse(newTrade)]);
+    exitEditMode();
+    return newRow;
+  };
+
+  let addOrCancelButton;
+  if (showNewRow) {
+    addOrCancelButton = <Button
+      variant='outlined'
+      color='error'
+      onClick={exitEditMode}
+    >
+      Cancel
+    </Button>;
+  }
+  else {
+    addOrCancelButton = <Button
+      variant='outlined'
+      color='primary'
+      onClick={enterEditMode}
+    >
+      Add Trade
+    </Button>;
+  }
+
   return (
-    <Box>
-      <UploadButton onUpload={handleImport}>Import CSV</UploadButton>
-      <Button onClick={handleExport}>Export CSV</Button>
-      <DataGrid columns={columns} rows={rows} />
-    </Box>
+    <Container maxWidth='lg' disableGutters={true}>
+      <Stack spacing={1}>
+        <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
+          {addOrCancelButton}
+          <Stack direction='row'>
+            <UploadButton onUpload={handleImport}>Import CSV</UploadButton>
+            <Button onClick={handleExport}>Export CSV</Button>
+          </Stack>
+        </Box>
+        <DataGrid
+          apiRef={apiRef}
+          columns={columns}
+          rows={rows}
+          editMode='row'
+          onRowEditStop={handleRowEditStop}
+          onRowEditStart={preventRowEditStart}
+          processRowUpdate={processRowUpdate}
+        />
+      </Stack>
+    </Container>
   )
 }
