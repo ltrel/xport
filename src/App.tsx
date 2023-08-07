@@ -1,8 +1,11 @@
+import { SnackbarProvider } from 'notistack';
 import Dashboard from './Dashboard';
 
 function App() {
   return (
-    <Dashboard />
+    <SnackbarProvider>
+      <Dashboard />
+    </SnackbarProvider>
   );
 }
 

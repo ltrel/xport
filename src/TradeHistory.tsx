@@ -20,6 +20,7 @@ import {
 import UploadButton from './UploadButton';
 import { downloadStr, formatLocalYMD } from './util';
 import { TradeRecord, TradeRecordSchema, tradesFromCSV } from './data/trade';
+import { useSnackbar } from 'notistack';
 
 const initialTrades: TradeRecord[] = [
   {
@@ -41,6 +42,7 @@ const initialTrades: TradeRecord[] = [
 ];
 
 export default function TradeHistory() {
+  const { enqueueSnackbar } = useSnackbar();
   const apiRef = useGridApiRef();
   const [trades, setTrades] = useState(initialTrades);
   const [showNewRow, setShowNewRow] = useState(false);
@@ -59,13 +61,15 @@ export default function TradeHistory() {
   const handleDelete = () => {
     setTrades(trades.filter((_, index) => !rowSelectionModel.includes(index)));
     setRowSelectionModel([]);
+    enqueueSnackbar(`Deleted ${rowSelectionModel.length} trades`, { variant: 'success', preventDuplicate: true });
   };
 
   const handleImport = async (file: File) => {
     try {
       setTrades(await tradesFromCSV(file));
+      enqueueSnackbar('File imported successfully', { variant: 'success', preventDuplicate: true });
     } catch (e) {
-      alert('Error: file could not be imported');
+      enqueueSnackbar('File import failed', { variant: 'error', preventDuplicate: true });
     }
   };
 
@@ -75,6 +79,7 @@ export default function TradeHistory() {
       cast: { date: (value) => formatLocalYMD(value) },
     });
     downloadStr(text, 'xport.csv');
+    enqueueSnackbar('File exported successfully', { variant: 'success', preventDuplicate: true });
   };
 
   const preventRowEditStart: GridEventListener<'rowEditStart'> = (
@@ -105,7 +110,12 @@ export default function TradeHistory() {
     const { id, ...newTrade } = newRow;
     setTrades([...trades, TradeRecordSchema.parse(newTrade)]);
     exitEditMode();
+    enqueueSnackbar('Trade added succesfully', { variant: 'success', preventDuplicate: true});
     return newRow;
+  };
+
+  const handleRowUpdateError = () => {
+    enqueueSnackbar('Trade could not be added', { variant: 'error', preventDuplicate: true });
   };
 
   const columns: GridColDef[] = [
@@ -216,6 +226,7 @@ export default function TradeHistory() {
           onRowEditStop={handleRowEditStop}
           onRowEditStart={preventRowEditStart}
           processRowUpdate={processRowUpdate}
+          onProcessRowUpdateError={handleRowUpdateError}
           checkboxSelection
           rowSelectionModel={rowSelectionModel}
           onRowSelectionModelChange={handleSelectionChange}
