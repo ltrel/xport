@@ -21,7 +21,6 @@ import UploadButton from './UploadButton';
 import { downloadStr, formatLocalYMD } from './util';
 import { TradeRecord, TradeRecordSchema, tradesFromCSV } from './data/trade';
 import { useSnackbar } from 'notistack';
-import { boxSizing } from '@mui/system';
 
 const initialTrades: TradeRecord[] = [
   {
@@ -66,6 +65,10 @@ export default function TradeHistory() {
   };
 
   const handleImport = async (file: File) => {
+    if (showNewRow) {
+      apiRef.current.stopRowEditMode({ id: trades.length, ignoreModifications: true });
+      exitEditMode();
+    }
     try {
       setTrades(await tradesFromCSV(file));
       enqueueSnackbar('File imported successfully', { variant: 'success', preventDuplicate: true });
