@@ -1,6 +1,6 @@
 import { stringify } from "csv/browser/esm/sync";
-import { DataGrid, GridColDef, GridEventListener, GridRowEditStartParams, GridRowEditStopParams, GridRowEditStopReasons, GridRowModel, GridRowsProp, MuiEvent, useGridApiRef } from "@mui/x-data-grid";
-import { useState } from "react";
+import { DataGrid, GridCallbackDetails, GridColDef, GridEventListener, GridRowEditStartParams, GridRowEditStopParams, GridRowEditStopReasons, GridRowId, GridRowModel, GridRowParams, GridRowSelectionCheckboxParams, GridRowSelectionModel, GridRowsProp, MuiEvent, useGridApiRef } from "@mui/x-data-grid";
+import { useRef, useState } from "react";
 import UploadButton from "./UploadButton";
 import { Box, Button, Container, Stack } from '@mui/material';
 import { downloadStr, formatLocalYMD } from './util';
@@ -29,15 +29,22 @@ export default function TradeHistory() {
   const apiRef = useGridApiRef();
   const [trades, setTrades] = useState(initialTrades);
   const [showNewRow, setShowNewRow] = useState(false);
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
 
   const enterEditMode = () => {
     setShowNewRow(true);
+    setRowSelectionModel([trades.length]);
     apiRef.current.startRowEditMode({id: trades.length});
   };
 
   const exitEditMode = () => {
     setShowNewRow(false);
   }
+
+  const handleDelete = () => {
+    setTrades(trades.filter((_, index) => !rowSelectionModel.includes(index)));
+    setRowSelectionModel([]);
+  };
 
   const handleImport = async (file: File) => {
     try {
@@ -65,6 +72,12 @@ export default function TradeHistory() {
     if (params.reason === GridRowEditStopReasons.escapeKeyDown) {
       exitEditMode();
       return;
+    }
+  };
+
+  const handleSelectionChange = async (newModel: GridRowSelectionModel, _details: GridCallbackDetails<any>) => {
+    if (!showNewRow) {
+      setRowSelectionModel(newModel);
     }
   };
 
@@ -115,11 +128,23 @@ export default function TradeHistory() {
     </Button>;
   }
 
+  const deleteButton = <Button
+    variant='outlined'
+    color='error'
+    disabled={showNewRow || !rowSelectionModel.length}
+    onClick={handleDelete}
+  >
+    {rowSelectionModel.length > 1 ? `Delete ${rowSelectionModel.length} Trades`: 'Delete Trade'}
+  </Button>
+
   return (
     <Container maxWidth='lg' disableGutters={true}>
       <Stack spacing={1}>
         <Box sx={{display: 'flex', justifyContent: 'space-between'}}>
-          {addOrCancelButton}
+          <Stack direction="row" spacing={1}>
+            {addOrCancelButton}
+            {deleteButton}
+          </Stack>
           <Stack direction='row'>
             <UploadButton onUpload={handleImport}>Import CSV</UploadButton>
             <Button onClick={handleExport}>Export CSV</Button>
@@ -133,6 +158,10 @@ export default function TradeHistory() {
           onRowEditStop={handleRowEditStop}
           onRowEditStart={preventRowEditStart}
           processRowUpdate={processRowUpdate}
+          checkboxSelection
+          rowSelectionModel={rowSelectionModel}
+          onRowSelectionModelChange={handleSelectionChange}
+          isRowSelectable={(params: GridRowParams) => !showNewRow || params.id === trades.length}
         />
       </Stack>
     </Container>
