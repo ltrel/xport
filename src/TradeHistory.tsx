@@ -21,6 +21,7 @@ import UploadButton from './UploadButton';
 import { downloadStr, formatLocalYMD } from './util';
 import { TradeRecord, TradeRecordSchema, tradesFromCSV } from './data/trade';
 import { useSnackbar } from 'notistack';
+import { boxSizing } from '@mui/system';
 
 const initialTrades: TradeRecord[] = [
   {
@@ -206,8 +207,8 @@ export default function TradeHistory() {
   );
 
   return (
-    <Container maxWidth="lg" disableGutters>
-      <Stack spacing={1}>
+    <Container maxWidth="lg" disableGutters sx={{height: '100%' }}>
+      <Stack spacing={1} sx={{height: '100%'}}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Stack direction="row" spacing={1}>
             {addOrCancelButton}
@@ -218,20 +219,22 @@ export default function TradeHistory() {
             <Button onClick={handleExport}>Export CSV</Button>
           </Stack>
         </Box>
-        <DataGrid
-          apiRef={apiRef}
-          columns={columns}
-          rows={rows}
-          editMode="row"
-          onRowEditStop={handleRowEditStop}
-          onRowEditStart={preventRowEditStart}
-          processRowUpdate={processRowUpdate}
-          onProcessRowUpdateError={handleRowUpdateError}
-          checkboxSelection
-          rowSelectionModel={rowSelectionModel}
-          onRowSelectionModelChange={handleSelectionChange}
-          isRowSelectable={(params: GridRowParams) => !showNewRow || params.id === trades.length}
-        />
+        <Box sx={{flexGrow: 1}}>
+          <DataGrid
+            apiRef={apiRef}
+            columns={columns}
+            rows={rows}
+            editMode="row"
+            onRowEditStop={handleRowEditStop}
+            onRowEditStart={preventRowEditStart}
+            processRowUpdate={processRowUpdate}
+            onProcessRowUpdateError={handleRowUpdateError}
+            checkboxSelection
+            rowSelectionModel={rowSelectionModel}
+            onRowSelectionModelChange={handleSelectionChange}
+            isRowSelectable={(params: GridRowParams) => !showNewRow || params.id === trades.length}
+          />
+        </Box>
       </Stack>
     </Container>
   );
