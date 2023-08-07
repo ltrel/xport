@@ -51,7 +51,7 @@ export default function TradeHistory() {
   const enterEditMode = () => {
     setShowNewRow(true);
     setRowSelectionModel([trades.length]);
-    apiRef.current.startRowEditMode({ id: trades.length });
+    apiRef.current.startRowEditMode({ id: trades.length, fieldToFocus: 'date' });
   };
 
   const exitEditMode = () => {
