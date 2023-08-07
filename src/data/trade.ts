@@ -1,13 +1,13 @@
-import { z } from "zod";
-import { parse, stringify } from "csv/browser/esm/sync";
+import { z } from 'zod';
+import { parse } from 'csv/browser/esm/sync';
 
 export interface TradeRecord {
   date: Date;
   orderType: 'Buy' | 'Sell';
-  sym: string,
-  unitPrice: number,
-  quantity: number,
-  fees: number,
+  sym: string;
+  unitPrice: number;
+  quantity: number;
+  fees: number;
 }
 
 export const TradeRecordSchema = z.object({
@@ -17,7 +17,7 @@ export const TradeRecordSchema = z.object({
   unitPrice: z.number(),
   quantity: z.number(),
   fees: z.number(),
-})
+});
 
 export const TradeArraySchema = z.array(TradeRecordSchema);
 
@@ -28,15 +28,13 @@ export const tradesFromCSV = async (file: File): Promise<TradeRecord[]> => {
     cast: (value, context) => {
       if (context.header) {
         return value;
-      }
-      else if (context.column === 'date') {
+      } if (context.column === 'date') {
         return new Date(value);
-      }
-      else if (context.index > 2) {
+      } if (context.index > 2) {
         return Number(value);
       }
       return value;
     },
   });
   return TradeArraySchema.parse(newTrades);
-}
+};

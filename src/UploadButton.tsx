@@ -1,5 +1,5 @@
-import { Button } from "@mui/material";
-import { ChangeEvent, ReactNode, useRef } from "react";
+import { Button } from '@mui/material';
+import { ChangeEvent, ReactNode, useRef } from 'react';
 
 interface UploadButtonProps {
   onUpload: (f: File) => void;
@@ -31,5 +31,9 @@ export default function UploadButton({ onUpload, children }: UploadButtonProps) 
       />
       <Button onClick={handleUploadClick}>{children}</Button>
     </>
-  )
+  );
 }
+
+UploadButton.defaultProps = {
+  children: null,
+};

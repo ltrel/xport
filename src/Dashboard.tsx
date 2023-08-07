@@ -1,5 +1,7 @@
-import TradeHistory from "./TradeHistory"
-import { Box, CssBaseline, Drawer, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
+import {
+  Box, CssBaseline, Drawer, List, ListItem, ListItemButton, ListItemText,
+} from '@mui/material';
+import TradeHistory from './TradeHistory';
 
 export default function Dashboard() {
   return (
@@ -27,9 +29,9 @@ export default function Dashboard() {
           ))}
         </List>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: "hidden" }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: 'hidden' }}>
         <TradeHistory />
       </Box>
     </Box>
-  )
+  );
 }
