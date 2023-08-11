@@ -46,9 +46,9 @@ export default function TradeHistory() {
     setShowNewRow(false);
   };
 
-  const handleDelete = () => {
-    deleteTrades(rowSelectionModel);
-    mutateTrades();
+  const handleDelete = async () => {
+    await deleteTrades(rowSelectionModel);
+    await mutateTrades();
     setRowSelectionModel([]);
     enqueueSnackbar(`Deleted ${rowSelectionModel.length} trades`, { variant: 'success', preventDuplicate: true });
   };
@@ -62,7 +62,7 @@ export default function TradeHistory() {
       const newTrades = await tradesFromCSV(file);
       await deleteTrades(trades.map((x) => x.id));
       await addTrades(newTrades);
-      mutateTrades();
+      await mutateTrades();
       enqueueSnackbar('File imported successfully', { variant: 'success', preventDuplicate: true });
     } catch (e) {
       enqueueSnackbar('File import failed', { variant: 'error', preventDuplicate: true });
@@ -104,7 +104,7 @@ export default function TradeHistory() {
 
   const processRowUpdate = async (newRow: GridRowModel) => {
     await addTrades([TradeRecordSchema.parse(newRow)]);
-    mutateTrades();
+    await mutateTrades();
     exitEditMode();
     enqueueSnackbar('Trade added succesfully', { variant: 'success', preventDuplicate: true });
     return newRow;
