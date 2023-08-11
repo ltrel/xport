@@ -19,39 +19,25 @@ import {
 } from '@mui/material';
 import UploadButton from './UploadButton';
 import { downloadStr, formatLocalYMD } from './util';
-import { TradeRecord, TradeRecordSchema, tradesFromCSV } from './data/trade';
+import { TradeRecordSchema, addTrades, deleteTrades, fetchTrades, tradesFromCSV } from './data/trade';
 import { useSnackbar } from 'notistack';
-
-const initialTrades: TradeRecord[] = [
-  {
-    date: new Date(2017, 3, 2),
-    orderType: 'Buy',
-    sym: 'VAS',
-    unitPrice: 97.31,
-    quantity: 2,
-    fees: 2,
-  },
-  {
-    date: new Date(2019, 5, 3),
-    orderType: 'Sell',
-    sym: 'VAS',
-    unitPrice: 91.29,
-    quantity: 1,
-    fees: 0,
-  },
-];
+import useSWR from 'swr';
 
 export default function TradeHistory() {
   const { enqueueSnackbar } = useSnackbar();
   const apiRef = useGridApiRef();
-  const [trades, setTrades] = useState(initialTrades);
+  const {data: trades, mutate: mutateTrades} = useSWR('api/trades', fetchTrades)
   const [showNewRow, setShowNewRow] = useState(false);
-  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([]);
+  const [rowSelectionModel, setRowSelectionModel] = useState<number[]>([]);
+
+  if(trades === undefined) {
+    return 'data not yet loaded';
+  }
 
   const enterEditMode = () => {
     setShowNewRow(true);
-    setRowSelectionModel([trades.length]);
-    apiRef.current.startRowEditMode({ id: trades.length, fieldToFocus: 'date' });
+    setRowSelectionModel([-1]);
+    apiRef.current.startRowEditMode({ id: -1, fieldToFocus: 'date' });
   };
 
   const exitEditMode = () => {
@@ -59,18 +45,22 @@ export default function TradeHistory() {
   };
 
   const handleDelete = () => {
-    setTrades(trades.filter((_, index) => !rowSelectionModel.includes(index)));
+    deleteTrades(rowSelectionModel);
+    mutateTrades();
     setRowSelectionModel([]);
     enqueueSnackbar(`Deleted ${rowSelectionModel.length} trades`, { variant: 'success', preventDuplicate: true });
   };
 
   const handleImport = async (file: File) => {
     if (showNewRow) {
-      apiRef.current.stopRowEditMode({ id: trades.length, ignoreModifications: true });
+      apiRef.current.stopRowEditMode({ id: -1, ignoreModifications: true });
       exitEditMode();
     }
     try {
-      setTrades(await tradesFromCSV(file));
+      const newTrades = await tradesFromCSV(file);
+      await deleteTrades(trades.map(x => x.id));
+      await addTrades(newTrades);
+      mutateTrades();
       enqueueSnackbar('File imported successfully', { variant: 'success', preventDuplicate: true });
     } catch (e) {
       enqueueSnackbar('File import failed', { variant: 'error', preventDuplicate: true });
@@ -106,13 +96,13 @@ export default function TradeHistory() {
     newModel: GridRowSelectionModel,
   ) => {
     if (!showNewRow) {
-      setRowSelectionModel(newModel);
+      setRowSelectionModel(newModel as number[]);
     }
   };
 
-  const processRowUpdate = (newRow: GridRowModel) => {
-    const { id, ...newTrade } = newRow;
-    setTrades([...trades, TradeRecordSchema.parse(newTrade)]);
+  const processRowUpdate = async (newRow: GridRowModel) => {
+    await addTrades([TradeRecordSchema.parse(newRow)]);
+    mutateTrades();
     exitEditMode();
     enqueueSnackbar('Trade added succesfully', { variant: 'success', preventDuplicate: true});
     return newRow;
@@ -171,14 +161,12 @@ export default function TradeHistory() {
     },
   ];
 
-  let rows: GridRowsProp = trades.map((x, i) => ({
+  let rows: GridRowsProp = trades.map((x) => ({
     ...x,
-    id: i,
     total: x.unitPrice * x.quantity * (x.orderType === 'Buy' ? -1 : 1) - x.fees,
   }));
   if (showNewRow) {
-    const newId = rows.length;
-    rows = [...rows, { id: newId }];
+    rows = [...rows, { id: -1 }];
   }
 
   let addOrCancelButton;
@@ -235,7 +223,7 @@ export default function TradeHistory() {
             checkboxSelection
             rowSelectionModel={rowSelectionModel}
             onRowSelectionModelChange={handleSelectionChange}
-            isRowSelectable={(params: GridRowParams) => !showNewRow || params.id === trades.length}
+            isRowSelectable={(params: GridRowParams) => !showNewRow || params.id === -1}
           />
         </Box>
       </Stack>

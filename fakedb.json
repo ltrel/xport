@@ -1,0 +1,22 @@
+{
+  "trades": [
+    {
+      "id": 0,
+      "date": "2017-03-02",
+      "orderType": "Buy",
+      "sym": "VAS",
+      "unitPrice": 97.31,
+      "quantity": 2,
+      "fees": 2
+    },
+    {
+      "id": 1,
+      "date": "2019-05-03",
+      "orderType": "Sell",
+      "sym": "VAS",
+      "unitPrice": 91.29,
+      "quantity": 1,
+      "fees": 0
+    }
+  ]
+}

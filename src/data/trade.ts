@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { parse } from 'csv/browser/esm/sync';
 
 export interface TradeRecord {
+  id: Number;
   date: Date;
   orderType: 'Buy' | 'Sell';
   sym: string;
@@ -11,6 +12,7 @@ export interface TradeRecord {
 }
 
 export const TradeRecordSchema = z.object({
+  id: z.number(),
   date: z.date(),
   orderType: z.enum(['Buy', 'Sell']),
   sym: z.string(),
@@ -37,4 +39,35 @@ export const tradesFromCSV = async (file: File): Promise<TradeRecord[]> => {
     },
   });
   return TradeArraySchema.parse(newTrades);
+};
+
+export const fetchTrades = async (): Promise<TradeRecord[]> => {
+  const resJson = await (await fetch('http://localhost:3000/trades')).json();
+  const trades = resJson.map((trade: any) => {
+    return { ...trade, date: new Date(trade.date)}
+  });
+  return TradeArraySchema.parse(trades);
+};
+
+export const addTrades = async (newTrades: TradeRecord[]) => {
+  const promiseArr = newTrades.map(async (trade) => {
+    const { id, ...withoutId } = trade;
+    return await fetch('http://localhost:3000/trades', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(withoutId),
+    });
+  });
+  return Promise.all(promiseArr);
+};
+
+export const deleteTrades = async (ids: Number[]) => {
+  const promiseArr = ids.map(async (id) => {
+    return await fetch(`http://localhost:3000/trades/${id}`, {
+      method: "DELETE",
+    });
+  });
+  return Promise.all(promiseArr);
 };
