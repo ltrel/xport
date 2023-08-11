@@ -17,20 +17,22 @@ import { useState } from 'react';
 import {
   Box, Button, Container, Stack,
 } from '@mui/material';
-import UploadButton from './UploadButton';
-import { downloadStr, formatLocalYMD } from './util';
-import { TradeRecordSchema, addTrades, deleteTrades, fetchTrades, tradesFromCSV } from './data/trade';
 import { useSnackbar } from 'notistack';
 import useSWR from 'swr';
+import UploadButton from './UploadButton';
+import { downloadStr, formatLocalYMD } from './util';
+import {
+  TradeRecordSchema, addTrades, deleteTrades, fetchTrades, tradesFromCSV,
+} from './data/trade';
 
 export default function TradeHistory() {
   const { enqueueSnackbar } = useSnackbar();
   const apiRef = useGridApiRef();
-  const {data: trades, mutate: mutateTrades} = useSWR('api/trades', fetchTrades)
+  const { data: trades, mutate: mutateTrades } = useSWR('api/trades', fetchTrades);
   const [showNewRow, setShowNewRow] = useState(false);
   const [rowSelectionModel, setRowSelectionModel] = useState<number[]>([]);
 
-  if(trades === undefined) {
+  if (trades === undefined) {
     return 'data not yet loaded';
   }
 
@@ -58,7 +60,7 @@ export default function TradeHistory() {
     }
     try {
       const newTrades = await tradesFromCSV(file);
-      await deleteTrades(trades.map(x => x.id));
+      await deleteTrades(trades.map((x) => x.id));
       await addTrades(newTrades);
       mutateTrades();
       enqueueSnackbar('File imported successfully', { variant: 'success', preventDuplicate: true });
@@ -104,7 +106,7 @@ export default function TradeHistory() {
     await addTrades([TradeRecordSchema.parse(newRow)]);
     mutateTrades();
     exitEditMode();
-    enqueueSnackbar('Trade added succesfully', { variant: 'success', preventDuplicate: true});
+    enqueueSnackbar('Trade added succesfully', { variant: 'success', preventDuplicate: true });
     return newRow;
   };
 
@@ -198,8 +200,8 @@ export default function TradeHistory() {
   );
 
   return (
-    <Container maxWidth="lg" disableGutters sx={{height: '100%' }}>
-      <Stack spacing={1} sx={{height: '100%'}}>
+    <Container maxWidth="lg" disableGutters sx={{ height: '100%' }}>
+      <Stack spacing={1} sx={{ height: '100%' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Stack direction="row" spacing={1}>
             {addOrCancelButton}
@@ -210,7 +212,7 @@ export default function TradeHistory() {
             <Button onClick={handleExport}>Export CSV</Button>
           </Stack>
         </Box>
-        <Box sx={{flexGrow: 1}}>
+        <Box sx={{ flexGrow: 1 }}>
           <DataGrid
             apiRef={apiRef}
             columns={columns}

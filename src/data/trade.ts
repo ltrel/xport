@@ -43,19 +43,17 @@ export const tradesFromCSV = async (file: File): Promise<TradeRecord[]> => {
 
 export const fetchTrades = async (): Promise<TradeRecord[]> => {
   const resJson = await (await fetch('http://localhost:3000/trades')).json();
-  const trades = resJson.map((trade: any) => {
-    return { ...trade, date: new Date(trade.date)}
-  });
+  const trades = resJson.map((trade: any) => ({ ...trade, date: new Date(trade.date) }));
   return TradeArraySchema.parse(trades);
 };
 
 export const addTrades = async (newTrades: TradeRecord[]) => {
   const promiseArr = newTrades.map(async (trade) => {
     const { id, ...withoutId } = trade;
-    return await fetch('http://localhost:3000/trades', {
-      method: "POST",
+    return fetch('http://localhost:3000/trades', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(withoutId),
     });
@@ -64,10 +62,8 @@ export const addTrades = async (newTrades: TradeRecord[]) => {
 };
 
 export const deleteTrades = async (ids: Number[]) => {
-  const promiseArr = ids.map(async (id) => {
-    return await fetch(`http://localhost:3000/trades/${id}`, {
-      method: "DELETE",
-    });
-  });
+  const promiseArr = ids.map(async (id) => fetch(`http://localhost:3000/trades/${id}`, {
+    method: 'DELETE',
+  }));
   return Promise.all(promiseArr);
 };

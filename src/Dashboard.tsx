@@ -29,7 +29,12 @@ export default function Dashboard() {
           ))}
         </List>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: 'hidden', minHeight: '100vh' }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1, p: 3, overflow: 'hidden', minHeight: '100vh',
+        }}
+      >
         <TradeHistory />
       </Box>
     </Box>
