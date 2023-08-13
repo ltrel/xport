@@ -43,6 +43,7 @@ export default function TradeHistory() {
   };
 
   const exitEditMode = () => {
+    setRowSelectionModel([]);
     setShowNewRow(false);
   };
 
@@ -102,11 +103,19 @@ export default function TradeHistory() {
     }
   };
 
-  const processRowUpdate = async (newRow: GridRowModel) => {
-    await addTrades([TradeRecordSchema.parse(newRow)]);
-    await mutateTrades();
+  const processRowUpdate = (newRow: GridRowModel) => {
+    const newTrade = TradeRecordSchema.parse(newRow);
+    mutateTrades(async () => {
+      try {
+        await addTrades([newTrade]);
+        enqueueSnackbar('Trade added succesfully', { variant: 'success', preventDuplicate: true });
+        return fetchTrades();
+      }
+      catch {
+        enqueueSnackbar('Trade could not be added', { variant: 'error', preventDuplicate: true });
+      }
+    }, { revalidate: false });
     exitEditMode();
-    enqueueSnackbar('Trade added succesfully', { variant: 'success', preventDuplicate: true });
     return newRow;
   };
 
