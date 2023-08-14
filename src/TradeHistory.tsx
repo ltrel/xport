@@ -135,6 +135,8 @@ export default function TradeHistory() {
       flex: 1,
       field: 'orderType',
       headerName: 'Order Type',
+      type: 'singleSelect',
+      valueOptions: ['Buy', 'Sell'],
       editable: true,
     },
     {
