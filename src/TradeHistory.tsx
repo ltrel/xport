@@ -237,6 +237,7 @@ export default function TradeHistory() {
             rowSelectionModel={rowSelectionModel}
             onRowSelectionModelChange={handleSelectionChange}
             isRowSelectable={(params: GridRowParams) => !showNewRow || params.id === -1}
+            showCellVerticalBorder
           />
         </Box>
       </Stack>
