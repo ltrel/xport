@@ -32,10 +32,10 @@ export const tradesFromCSV = async (file: File): Promise<TradeRecord[]> => {
         return value;
       } if (context.column === 'date') {
         return new Date(value);
-      } if (context.index > 2) {
-        return Number(value);
+      } if (context.column === 'sym' || context.column === 'orderType') {
+        return value;
       }
-      return value;
+      return Number(value);
     },
   });
   return TradeArraySchema.parse(newTrades);
