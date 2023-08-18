@@ -22,7 +22,7 @@ const drawerItems = [
     text: 'About',
     route: '/about',
   },
-]
+];
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ export default function Dashboard() {
         </Typography>
         <Divider />
         <List>
-          {drawerItems.map(({key, text, route}) => (
+          {drawerItems.map(({ key, text, route }) => (
             <ListItem key={key} disablePadding>
               <ListItemButton onClick={() => navigate(route)}>
                 <ListItemText primary={text} />

@@ -1,12 +1,12 @@
 import { SnackbarProvider } from 'notistack';
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Dashboard from './Dashboard';
 import TradeHistory from './TradeHistory';
 import About from './About';
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <Dashboard />,
     children: [
       {
@@ -14,11 +14,11 @@ const router = createBrowserRouter([
         element: <TradeHistory />,
       },
       {
-        path: "trades",
+        path: 'trades',
         element: <TradeHistory />,
       },
       {
-        path: "about",
+        path: 'about',
         element: <About />,
       },
     ],

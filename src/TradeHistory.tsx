@@ -109,10 +109,10 @@ export default function TradeHistory() {
       try {
         await addTrades([newTrade]);
         enqueueSnackbar('Trade added succesfully', { variant: 'success', preventDuplicate: true });
-        return fetchTrades();
-      }
-      catch {
+        return await fetchTrades();
+      } catch (err) {
         enqueueSnackbar('Trade could not be added', { variant: 'error', preventDuplicate: true });
+        throw err;
       }
     }, { revalidate: false });
     exitEditMode();
