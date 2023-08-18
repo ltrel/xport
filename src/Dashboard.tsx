@@ -1,9 +1,32 @@
 import {
-  Box, CssBaseline, Drawer, List, ListItem, ListItemButton, ListItemText,
+  Box,
+  CssBaseline,
+  Divider,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Typography,
 } from '@mui/material';
-import TradeHistory from './TradeHistory';
+import { Outlet, useNavigate } from 'react-router-dom';
+
+const drawerItems = [
+  {
+    key: 'trades',
+    text: 'Trade History',
+    route: '/trades',
+  },
+  {
+    key: 'about',
+    text: 'About',
+    route: '/about',
+  },
+]
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -19,10 +42,14 @@ export default function Dashboard() {
         variant="permanent"
         anchor="left"
       >
+        <Typography variant="h4" sx={{ textAlign: 'center', my: 1, fontFamily: 'Monospace' }}>
+          xport
+        </Typography>
+        <Divider />
         <List>
-          {['My Portfolio', 'Trade History', 'Settings'].map((text) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
+          {drawerItems.map(({key, text, route}) => (
+            <ListItem key={key} disablePadding>
+              <ListItemButton onClick={() => navigate(route)}>
                 <ListItemText primary={text} />
               </ListItemButton>
             </ListItem>
@@ -35,7 +62,7 @@ export default function Dashboard() {
           flexGrow: 1, p: 3, overflow: 'hidden', minHeight: '100vh',
         }}
       >
-        <TradeHistory />
+        <Outlet />
       </Box>
     </Box>
   );
